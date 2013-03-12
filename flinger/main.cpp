@@ -2,17 +2,25 @@
 //  main.cpp
 //  flinger
 //
-//  Created by Snooz on 3/10/13.
+//  Created by Mischa Spiegelmock on 3/10/13.
 //
 //
 
 #include <iostream>
+#include <Leap.h>
+#include "FlingerTestListener.h"
 
-int main(int argc, const char * argv[])
-{
+using namespace std;
 
-    // insert code here...
-    std::cout << "Hello, World!\n";
+int main(int argc, const char * argv[]) {
+    Leap::Controller controller;
+    flinger::TestListener testListener;
+    controller.addListener(testListener);
+    
+    cin.get();
+    
+    controller.removeListener(testListener);
+    
     return 0;
 }
 
