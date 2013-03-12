@@ -13,6 +13,11 @@ using namespace std;
 namespace flinger {
     
 MacDriver::MacDriver() {
+    if (! AXAPIEnabled()) {
+        cerr << "You must enable access for assistive devices in the Universal Access preference pane to use this application.\n";
+        return;
+    }
+    
     windowList = NULL;
     
     listOptions = kCGWindowListExcludeDesktopElements;
