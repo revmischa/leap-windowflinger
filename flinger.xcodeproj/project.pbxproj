@@ -12,12 +12,6 @@
 		C33C376A16EDD87C00F80078 /* FlingerListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3908A0316EDAF590009D55F /* FlingerListener.cpp */; };
 		C33C376C16EDD87C00F80078 /* libLeap.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C3908A0C16EDB15D0009D55F /* libLeap.dylib */; };
 		C33C376E16EDD87C00F80078 /* FlingerListener.h in Headers */ = {isa = PBXBuildFile; fileRef = C3908A0416EDAF590009D55F /* FlingerListener.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C33C37AE16EDDBDE00F80078 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C33C379216EDDB7B00F80078 /* Cocoa.framework */; };
-		C33C37B416EDDBDE00F80078 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C33C37B216EDDBDE00F80078 /* InfoPlist.strings */; };
-		C33C37B816EDDBDE00F80078 /* Flinger.m in Sources */ = {isa = PBXBuildFile; fileRef = C33C37B716EDDBDE00F80078 /* Flinger.m */; };
-		C33C37BC16EDDBFE00F80078 /* FlingerListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3908A0316EDAF590009D55F /* FlingerListener.cpp */; };
-		C33C37BD16EDDC0200F80078 /* FlingerListener.h in Headers */ = {isa = PBXBuildFile; fileRef = C3908A0416EDAF590009D55F /* FlingerListener.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C33C37BE16EDDC1800F80078 /* libLeap.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C3908A0C16EDB15D0009D55F /* libLeap.dylib */; };
 		C33C37DE16EEEB4000F80078 /* FlingerMac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33C37DC16EEEB4000F80078 /* FlingerMac.cpp */; };
 		C33C37DF16EEEB4000F80078 /* FlingerMac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33C37DC16EEEB4000F80078 /* FlingerMac.cpp */; };
 		C33C37E016EEEB4000F80078 /* FlingerMac.h in Headers */ = {isa = PBXBuildFile; fileRef = C33C37DD16EEEB4000F80078 /* FlingerMac.h */; };
@@ -65,7 +59,6 @@
 		C33C379A16EDDB7B00F80078 /* Flinger-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Flinger-Prefix.pch"; sourceTree = "<group>"; };
 		C33C379B16EDDB7B00F80078 /* Flinger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Flinger.h; sourceTree = "<group>"; };
 		C33C379C16EDDB7B00F80078 /* Flinger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Flinger.m; sourceTree = "<group>"; };
-		C33C37AD16EDDBDE00F80078 /* Flinger.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Flinger.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C33C37B116EDDBDE00F80078 /* Flinger-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Flinger-Info.plist"; sourceTree = "<group>"; };
 		C33C37B316EDDBDE00F80078 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C33C37B516EDDBDE00F80078 /* Flinger-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Flinger-Prefix.pch"; sourceTree = "<group>"; };
@@ -91,15 +84,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C33C376C16EDD87C00F80078 /* libLeap.dylib in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C33C37A916EDDBDE00F80078 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C33C37AE16EDDBDE00F80078 /* Cocoa.framework in Frameworks */,
-				C33C37BE16EDDC1800F80078 /* libLeap.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,7 +199,6 @@
 			children = (
 				C39089F216EDAEED0009D55F /* flinger */,
 				C33C377216EDD87C00F80078 /* libflinger.dylib */,
-				C33C37AD16EDDBDE00F80078 /* Flinger.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -244,14 +227,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C33C37AA16EDDBDE00F80078 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C33C37BD16EDDC0200F80078 /* FlingerListener.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -271,24 +246,6 @@
 			productName = libflinger;
 			productReference = C33C377216EDD87C00F80078 /* libflinger.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
-		};
-		C33C37AC16EDDBDE00F80078 /* Flinger */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = C33C37B916EDDBDE00F80078 /* Build configuration list for PBXNativeTarget "Flinger" */;
-			buildPhases = (
-				C33C37A816EDDBDE00F80078 /* Sources */,
-				C33C37A916EDDBDE00F80078 /* Frameworks */,
-				C33C37AA16EDDBDE00F80078 /* Headers */,
-				C33C37AB16EDDBDE00F80078 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = Flinger;
-			productName = Flinger;
-			productReference = C33C37AD16EDDBDE00F80078 /* Flinger.framework */;
-			productType = "com.apple.product-type.framework";
 		};
 		C39089F116EDAEED0009D55F /* flingerTest */ = {
 			isa = PBXNativeTarget;
@@ -330,21 +287,9 @@
 			targets = (
 				C39089F116EDAEED0009D55F /* flingerTest */,
 				C33C376816EDD87C00F80078 /* flinger */,
-				C33C37AC16EDDBDE00F80078 /* Flinger */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		C33C37AB16EDDBDE00F80078 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C33C37B416EDDBDE00F80078 /* InfoPlist.strings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C33C376916EDD87C00F80078 /* Sources */ = {
@@ -354,15 +299,6 @@
 				C33C376A16EDD87C00F80078 /* FlingerListener.cpp in Sources */,
 				C33C37DF16EEEB4000F80078 /* FlingerMac.cpp in Sources */,
 				C33C37E416EEEB5B00F80078 /* FlingerDriver.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C33C37A816EDDBDE00F80078 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C33C37B816EDDBDE00F80078 /* Flinger.m in Sources */,
-				C33C37BC16EDDBFE00F80078 /* FlingerListener.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -415,46 +351,6 @@
 					"\"$(SRCROOT)/../Leap_SDK/lib/libc++\"",
 				);
 				PRODUCT_NAME = flinger;
-			};
-			name = Release;
-		};
-		C33C37BA16EDDBDE00F80078 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COMBINE_HIDPI_IMAGES = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_VERSION = A;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Flinger/Flinger-Prefix.pch";
-				INFOPLIST_FILE = "Flinger/Flinger-Info.plist";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../Leap_SDK/lib/libc++\"",
-				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = framework;
-			};
-			name = Debug;
-		};
-		C33C37BB16EDDBDE00F80078 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COMBINE_HIDPI_IMAGES = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_VERSION = A;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Flinger/Flinger-Prefix.pch";
-				INFOPLIST_FILE = "Flinger/Flinger-Info.plist";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../Leap_SDK/lib/libc++\"",
-				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = framework;
 			};
 			name = Release;
 		};
@@ -542,15 +438,6 @@
 			buildConfigurations = (
 				C33C377016EDD87C00F80078 /* Debug */,
 				C33C377116EDD87C00F80078 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		C33C37B916EDDBDE00F80078 /* Build configuration list for PBXNativeTarget "Flinger" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				C33C37BA16EDDBDE00F80078 /* Debug */,
-				C33C37BB16EDDBDE00F80078 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
