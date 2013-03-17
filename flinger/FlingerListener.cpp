@@ -70,7 +70,7 @@ void Listener::onFrame(const Leap::Controller &controller) {
     Leap::Frame refFrame = controller.frame(handGestureFrameInterval);
     
     if (refFrame.isValid() && latestFrame.hands().count() == 1) {
-        Leap::Hand hand = latestFrame.hands()[0];
+//        Leap::Hand hand = latestFrame.hands()[0];
 //        double scaleFactor = hand.scaleFactor(refFrame);
 //        cout << "Scale: " << scaleFactor << endl;
     }
@@ -108,33 +108,6 @@ void Listener::onFrame(const Leap::Controller &controller) {
                 currentWinOrigPosition = driver->getWindowPosition(win);
             } break;
         
-            case Leap::Gesture::TYPE_SWIPE: {
-                // deal only with one-finger swipes... for now
-                if (latestFrame.pointables().count() > 1)
-                    continue;
-                
-                // move window
-                
-                if (! currentWin)
-                    continue;
-                
-                // get tap location in screen coords
-                if (gesture.pointables().empty()) continue;
-                Leap::Vector screenLoc = pointableScreenPos(gesture.pointables()[0], screens);
-                if (! screenLoc.isValid())
-                    continue;
-                
-                // get gesture dir/magnitude
-                Leap::SwipeGesture swipe = Leap::SwipeGesture(gesture);
-                Leap::Vector swipeMagnitude = swipe.position() - swipe.startPosition();
-                if (swipe.state() == Leap::Gesture::STATE_STOP) {
-                    cout << "Swipe mag(x)=" << swipeMagnitude.x << ", mag(y)=" << swipeMagnitude.y << endl;
-                    cout << "Move to: " << screenLoc.x << "," << screenLoc.y << endl;
-                    driver->setWindowPosition(currentWin, screenLoc);
-                    onWindowMovedBy(controller, currentWin, swipeMagnitude.x, swipeMagnitude.y);
-                }
-            } break;
-        
             default:
                 break;
         }
@@ -143,29 +116,62 @@ void Listener::onFrame(const Leap::Controller &controller) {
     // one-finger pointing
     if (currentWin && latestFrame.pointables().count() == 1) {
         Leap::Vector hitPoint = pointableScreenPos(latestFrame.pointables()[0], screens);
-        driver->setWindowPosition(currentWin, hitPoint);
+        driver->setWindowCenter(currentWin, hitPoint);
         return;
     }
-    /*
-    // move currently selected window with two-finger pointing
+    
+    // scale currently selected window with two-finger pointing
     if (currentWin && latestFrame.pointables().count() == 2) {
-        float pointDistance = latestFrame.pointables()[0].tipPosition().distanceTo(latestFrame.pointables()[1].tipPosition());
-        cout << "distance: " << pointDistance << endl;
-        if (pointDistance < 35) {
-            // finger tips close together
-            Leap::Vector hitPoint1 = pointableScreenPos(latestFrame.pointables()[0], screens);
-            Leap::Vector hitPoint2 = pointableScreenPos(latestFrame.pointables()[1], screens);
-            if (hitPoint1.isValid() && hitPoint2.isValid()) {
-                // average x/y
-                Leap::Vector centerPoint;
-                centerPoint.x = (hitPoint1.x + hitPoint2.x) / 2;
-                centerPoint.y = (hitPoint1.y + hitPoint2.y) / 2;
-                
-                // move window
-                driver->setWindowPosition(currentWin, centerPoint);
+//        cout << "distance: " << pointDistance << endl;
+        
+        // get pointables from this frame and last frame, find delta
+        Leap::Frame lastFrame = controller.frame(1);
+        if (lastFrame.isValid()) {
+            Leap::Pointable latestPointer1 = latestFrame.pointables()[0];
+            Leap::Pointable latestPointer2 = latestFrame.pointables()[1];
+            
+            Leap::Pointable lastPointer1 = lastFrame.finger(latestPointer1.id());
+            Leap::Pointable lastPointer2 = lastFrame.finger(latestPointer2.id());
+            if (lastPointer1.isValid() && lastPointer2.isValid()) {
+                Leap::Vector latestHitPoint1 = pointableScreenPos(latestFrame.pointables()[0], screens);
+                Leap::Vector latestHitPoint2 = pointableScreenPos(latestFrame.pointables()[1], screens);
+                Leap::Vector lastHitPoint1 = pointableScreenPos(lastFrame.pointables()[0], screens);
+                Leap::Vector lastHitPoint2 = pointableScreenPos(lastFrame.pointables()[1], screens);
+                if (latestHitPoint1.isValid() && latestHitPoint2.isValid() && lastHitPoint1.isValid() && lastHitPoint2.isValid()) {
+                    
+                    // use primary hand as scale, secondary hand as center anchor point
+                    double x, y, dx, dy;
+                    if (latestPointer1.tipPosition().x > latestPointer2.tipPosition().x) {
+                        x = latestHitPoint1.x; y = latestHitPoint1.y;
+                        // delta in distance between two fingers
+//                        float pointDistance = latestFrame.pointables()[0].tipPosition().distanceTo(latestFrame.pointables()[1].tipPosition());
+//                        dx = latestHitPoint1.x - lastHitPoint2.x;
+//                        dy = latestHitPoint1.y - lastHitPoint2.y;
+
+//                        dx = hitPoint2.x - lastHitPoint2.x;
+//                        dy = hitPoint2.y - lastHitPoint2.y;
+                        
+                        dx = abs(latestPointer2.tipPosition().x) - abs(latestPointer1.tipPosition().x);
+                        dy = abs(latestPointer2.tipPosition().y) - abs(latestPointer1.tipPosition().y);
+                    } else {
+                        x = latestHitPoint2.x; y = latestHitPoint2.y;
+                        dx = latestHitPoint1.x - lastHitPoint1.x;
+                        dy = latestHitPoint1.y - lastHitPoint1.y;
+                    }
+                    
+                    // get dx/dy
+                    cout << "dx: " << dx << ", dy: " << dy << endl;
+                    
+                    // average x/y
+                    Leap::Vector centerPoint(x, y, 0);
+                    
+                    // scale window
+                    driver->setWindowCenter(currentWin, centerPoint);
+                    driver->scaleWindow(currentWin, dx * 2, dy * 2);
+                }
             }
         }
-    }*/
+    }
 }
     
 }
