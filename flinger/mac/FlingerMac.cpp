@@ -31,7 +31,7 @@ void MacDriver::updateWindowInfo() {
 const flingerWinRef MacDriver::getWindowAt(double x, double y) {
     updateWindowInfo();
     flingerWinRef ret = NULL;
-    set<int> checkedPids;
+    map<int,int> checkedProcWindows;
     
     for (int i = 0; i < CFArrayGetCount(windowList); i++) {
         // check each application's windows in turn. windows appear to be ordered by "depth" already
@@ -42,12 +42,16 @@ const flingerWinRef MacDriver::getWindowAt(double x, double y) {
         int pid;
         CFNumberRef pidRef = (CFNumberRef)CFDictionaryGetValue(info, kCGWindowOwnerPID);
         CFNumberGetValue(pidRef, kCFNumberIntType, &pid);
+        if (! pid) continue;
         
-        if (checkedPids.find(pid) != checkedPids.end()) {
-            // already checked this app
-            continue;
-        }
-        checkedPids.insert(pid);
+        // which window did we last check for this process? check the next one in the stack
+        int procWinIdx;
+        if (checkedProcWindows.find(pid) != checkedProcWindows.end())
+            procWinIdx = checkedProcWindows[pid] + 1;
+        else
+            procWinIdx = 0;
+        checkedProcWindows[pid] = procWinIdx;
+        
         
         // layer
         int layer;
@@ -82,14 +86,14 @@ const flingerWinRef MacDriver::getWindowAt(double x, double y) {
         
         // search for window with a rect that includes the test point
         cout << "Checking point in " << x << "," << y << endl;
-        ret = findWindowForPID(pid, x, y);
+        ret = findWindowForPID(pid, procWinIdx, x, y);
         if (ret) break;
     }
 
     return ret;
 }
     
-const flingerWinRef MacDriver::findWindowForPID(int pid, double x, double y) {
+const flingerWinRef MacDriver::findWindowForPID(int pid, int winIdx, double x, double y) {
     flingerWinRef ret = NULL;
     
     // get all windows for this application
@@ -108,49 +112,55 @@ const flingerWinRef MacDriver::findWindowForPID(int pid, double x, double y) {
         return NULL;
     }
     
-    for (int i = 0; i < CFArrayGetCount(appWindowsRef); i++) {
-        AXUIElementRef winRef = (AXUIElementRef)CFArrayGetValueAtIndex(appWindowsRef, i);
-        
-        CFStringRef titleRef;
-        char titleTmp[300];
-        bool hasTitle = false;
-        if (AXUIElementCopyAttributeValue(winRef, kAXTitleAttribute, (CFTypeRef *)&titleRef) == kAXErrorSuccess) {
-            if (CFStringGetCString(titleRef, titleTmp, sizeof(titleTmp), kCFStringEncodingUTF8))
-                hasTitle = true;
-        } else {
-            cerr << "failed to get window title\n";
-        }
-        
-        CFTypeRef encodedSize, encodedPosition;
-        AXUIElementCopyAttributeValue(winRef, kAXSizeAttribute, (CFTypeRef *)&encodedSize);
-        AXUIElementCopyAttributeValue(winRef, kAXPositionAttribute, (CFTypeRef *)&encodedPosition);
-        CGSize size; CGPoint position;
-        
-        if (! AXValueGetValue((AXValueRef)encodedSize, kAXValueCGSizeType, (void *)&size)) {
-            cerr << "Failed to get encodedSize value\n";
-            goto done;
-        }
-        if (! AXValueGetValue((AXValueRef)encodedPosition, kAXValueCGPointType, &position)) {
-            cerr << "Failed to get encodedPosition value\n";
-            goto done;
-        }
-        
-        cout << i << ": (" << position.x << ", " << position.y << ", " << size.width << ", " << size.height << ")" << endl;
-        
-        CFRelease(encodedSize);
-        CFRelease(encodedPosition);
-        
-        CGPoint testPoint = CGPointMake(x, y);
-        CGRect winRect = CGRectMake(position.x, position.y, size.width, size.height);
-        if (CGRectContainsPoint(winRect, testPoint)) {
-            cout << "found window: " << (hasTitle ? titleTmp : "(no title)") << endl;
-            ret = (void *)CFRetain(winRef);
-            goto done;
-        }
+    // check next window in the stack, which we should find at winIdx
+    long winCount = CFArrayGetCount(appWindowsRef);
+    if (winIdx >= winCount) {
+        CFRelease(appWindowsRef);
+        return ret;
     }
     
-done:
+    AXUIElementRef winRef = (AXUIElementRef)CFArrayGetValueAtIndex(appWindowsRef, winIdx);
+    CFRetain(winRef);
     CFRelease(appWindowsRef);
+    
+    CFStringRef titleRef;
+    char titleTmp[300];
+    bool hasTitle = false;
+    if (AXUIElementCopyAttributeValue(winRef, kAXTitleAttribute, (CFTypeRef *)&titleRef) == kAXErrorSuccess) {
+        if (CFStringGetCString(titleRef, titleTmp, sizeof(titleTmp), kCFStringEncodingUTF8))
+            hasTitle = true;
+    } else {
+        cerr << "failed to get window title\n";
+    }
+    
+    CFTypeRef encodedSize, encodedPosition;
+    AXUIElementCopyAttributeValue(winRef, kAXSizeAttribute, (CFTypeRef *)&encodedSize);
+    AXUIElementCopyAttributeValue(winRef, kAXPositionAttribute, (CFTypeRef *)&encodedPosition);
+    CGSize size; CGPoint position;
+    
+    if (! AXValueGetValue((AXValueRef)encodedSize, kAXValueCGSizeType, (void *)&size)) {
+        cerr << "Failed to get encodedSize value\n";
+        CFRelease(winRef);
+        return ret;
+    }
+    if (! AXValueGetValue((AXValueRef)encodedPosition, kAXValueCGPointType, &position)) {
+        cerr << "Failed to get encodedPosition value\n";
+        CFRelease(winRef);
+        return ret;    }
+    
+    cout << winIdx << ": (" << position.x << ", " << position.y << ", " << size.width << ", " << size.height << ")" << endl;
+    
+    CFRelease(encodedSize);
+    CFRelease(encodedPosition);
+    
+    CGPoint testPoint = CGPointMake(x, y);
+    CGRect winRect = CGRectMake(position.x, position.y, size.width, size.height);
+    if (CGRectContainsPoint(winRect, testPoint)) {
+        cout << "found window: " << (hasTitle ? titleTmp : "(no title)") << endl;
+        ret = (void *)CFRetain(winRef);
+    }
+    
+    CFRelease(winRef);
     return ret;
 }
 

@@ -10,6 +10,7 @@
 #define __flinger__FlingerMac__
 
 #include <iostream>
+#include <map>
 #include <set>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CoreGraphics.h>
@@ -34,7 +35,7 @@ protected:
     CFArrayRef windowList;
     
     void updateWindowInfo();
-    const flingerWinRef findWindowForPID(int pid, double x, double y);
+    const flingerWinRef findWindowForPID(int pid, int winIdx, double x, double y);
 };
     
 }
