@@ -63,7 +63,10 @@ const flingerWinRef MacDriver::getWindowAt(double x, double y) {
         int layer;
         CFNumberRef layerRef = (CFNumberRef)CFDictionaryGetValue(info, kCGWindowLayer);
         CFNumberGetValue(layerRef, kCFNumberIntType, &layer);
+        
+        // would be nice to be able to select system windows, but they always appear to be on top
         if (layer != 0) continue; // maybe? can't find docs on layer, but 0 seems to be app
+        
         /*
         // window num
         CFNumberRef winNumRef = (CFNumberRef)CFDictionaryGetValue(info, kCGWindowNumber);
@@ -188,9 +191,9 @@ void MacDriver::scaleWindow(const flingerWinRef win, double dx, double dy) {
     CGSize size = _getWindowSize(win);
     CGPoint loc = _getWindowPosition(win);
     CGRect bounds = CGRectMake(loc.x, loc.y, size.width, size.height);
-    cout << "got rect " << loc.x << ", " << loc.y << endl;
+    
 
-    CGRect scaled = CGRectInset(bounds, dx, dy);
+    CGRect scaled = CGRectInset(bounds, -dx, -dy);
     if (CGRectIsNull(scaled)) {
         cerr << "Failed to inset rect by " << dx << ", " << dy << endl;
         return;
@@ -198,7 +201,8 @@ void MacDriver::scaleWindow(const flingerWinRef win, double dx, double dy) {
     
     Leap::Vector posVector(scaled.origin.x, scaled.origin.y, 0);
     Leap::Vector sizeVector(scaled.size.width, scaled.size.height, 0);
-    cout << "setting rect " << posVector.x << ", " << posVector.y << endl;
+    cout << "scaled width: " << scaled.size.width << ", height: " << scaled.size.height << endl;
+    cout << "x offset: " << (loc.x - scaled.origin.x) << ", y offset: " << (loc.y - scaled.origin.y) << endl;
     setWindowPosition(win, posVector);
     setWindowSize(win, sizeVector);
 }
@@ -222,7 +226,6 @@ CGPoint MacDriver::_getWindowPosition(const flingerWinRef win) {
         cerr << "Failed to get encodedPoint value\n";
         return CGPoint();
     }
-    cout << "got point " << point.x << ", " << point.y << endl;
     return point;
 }
 

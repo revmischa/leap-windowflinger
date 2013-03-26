@@ -137,36 +137,61 @@ void Listener::onFrame(const Leap::Controller &controller) {
                 Leap::Vector latestHitPoint2 = pointableScreenPos(latestFrame.pointables()[1], screens);
                 Leap::Vector lastHitPoint1 = pointableScreenPos(lastFrame.pointables()[0], screens);
                 Leap::Vector lastHitPoint2 = pointableScreenPos(lastFrame.pointables()[1], screens);
+                
+                // use movement of fingers to determine scale factor
+                // "pinching" gesture:
+                // if left finger moves left, scale increases
+                // if left finger moves right, scale decreases
+                // if right finger moves right, scale increases
+                // if right finger moves left, scale decereases
+                //  <----- -----> = expand
+                //  -----> <----- = contact
+                
                 if (latestHitPoint1.isValid() && latestHitPoint2.isValid() && lastHitPoint1.isValid() && lastHitPoint2.isValid()) {
                     
+                                        
                     // use primary hand as scale, secondary hand as center anchor point
                     double x, y, dx, dy;
                     if (latestPointer1.tipPosition().x > latestPointer2.tipPosition().x) {
-                        x = latestHitPoint1.x; y = latestHitPoint1.y;
-                        // delta in distance between two fingers
-//                        float pointDistance = latestFrame.pointables()[0].tipPosition().distanceTo(latestFrame.pointables()[1].tipPosition());
-//                        dx = latestHitPoint1.x - lastHitPoint2.x;
-//                        dy = latestHitPoint1.y - lastHitPoint2.y;
+                        // latestPointer1 == right hand
 
-//                        dx = hitPoint2.x - lastHitPoint2.x;
-//                        dy = hitPoint2.y - lastHitPoint2.y;
+                        dx = latestPointer1.tipPosition().x - lastPointer1.tipPosition().x;
+                        dx += lastPointer2.tipPosition().x - latestPointer2.tipPosition().x;
                         
-                        dx = abs(latestPointer2.tipPosition().x) - abs(latestPointer1.tipPosition().x);
-                        dy = abs(latestPointer2.tipPosition().y) - abs(latestPointer1.tipPosition().y);
+//                        dy = latestPointer1.tipPosition().y - lastPointer1.tipPosition().y;
+//                        dy += lastPointer2.tipPosition().y - latestPointer2.tipPosition().y;
                     } else {
-                        x = latestHitPoint2.x; y = latestHitPoint2.y;
-                        dx = latestHitPoint1.x - lastHitPoint1.x;
-                        dy = latestHitPoint1.y - lastHitPoint1.y;
+                        dx = latestPointer2.tipPosition().x - lastPointer2.tipPosition().x;
+                        dx += lastPointer1.tipPosition().x - latestPointer1.tipPosition().x;
+                        
+//                        dy = latestPointer1.tipPosition().y - lastPointer1.tipPosition().y;
+//                        dy += lastPointer2.tipPosition().y - latestPointer2.tipPosition().y;
                     }
                     
-                    // get dx/dy
-                    cout << "dx: " << dx << ", dy: " << dy << endl;
+                    // calculate screen aspect ratio
+                    double aspect = screens[0].widthPixels() / screens[0].heightPixels();
+                    dy = dx;
+//                    dy *= aspect;
+                    
+                    // distance
+                    double distance = latestPointer1.tipPosition().distanceTo(latestPointer2.tipPosition());
+                    // mod dx/dy by distance, closer together = greater scaling
+                    double distanceScale = MIN(distance, 300) / 300;
+                    distanceScale = 1 - distanceScale;
+                    if (distanceScale < 0.5) distanceScale = 0.5;
+                    dx *= distanceScale;
+                    dy *= distanceScale;
+                    
+                    dx *= 5;
+                    dy *= 5;
+
+                    cout << "distance: " << distanceScale << " dx: " << dx << ", dy: " << dy << endl;
                     
                     // average x/y
-                    Leap::Vector centerPoint(x, y, 0);
+//                    Leap::Vector centerPoint(x, y, 0);
                     
                     // scale window
-                    driver->setWindowCenter(currentWin, centerPoint);
+                    //driver->setWindowCenter(currentWin, centerPoint);
                     driver->scaleWindow(currentWin, dx * 2, dy * 2);
                 }
             }
