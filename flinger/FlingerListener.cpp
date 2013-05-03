@@ -79,12 +79,13 @@ void Listener::onFrame(const Leap::Controller &controller) {
     Leap::GestureList gestures = latestFrame.gestures();
 
     // process gestures
-    const int gestureCount = gestures.count();
-    for (int i = 0; i < gestureCount; i++) {
-        Leap::Gesture gesture = gestures[i];
+    for (Leap::GestureList::const_iterator it = gestures.begin(); it != gestures.end(); ++it) {
+        Leap::Gesture gesture = *it;
         
         switch (gesture.type()) {
             case Leap::Gesture::TYPE_SCREEN_TAP: {
+                Leap::ScreenTapGesture tap = Leap::ScreenTapGesture(gesture);
+                
                 // select new current window, or deselect current window
                 if (currentWin) {
                     setCurrentWin(NULL);
@@ -94,7 +95,7 @@ void Listener::onFrame(const Leap::Controller &controller) {
                 
                 // get tap location in screen coords
                 if (gesture.pointables().empty()) continue;
-                Leap::Vector screenLoc = pointableScreenPos(gesture.pointables()[0], screens);
+                Leap::Vector screenLoc = pointableScreenPos(tap.pointable(), screens);
                 if (! screenLoc.isValid())
                     continue;
                 
@@ -120,15 +121,16 @@ void Listener::onFrame(const Leap::Controller &controller) {
         return;
     }
     
-    // scale currently selected window with two-finger pointing
-    if (currentWin && latestFrame.pointables().count() == 2) {
+    // scale currently selected window with two-hand finger pointing
+    Leap::HandList hands = latestFrame.hands();
+    if (currentWin && hands.count() == 2 && hands[0].pointables().count() >= 1 && hands[1].pointables().count() >= 1) {
 //        cout << "distance: " << pointDistance << endl;
         
         // get pointables from this frame and last frame, find delta
         Leap::Frame lastFrame = controller.frame(1);
         if (lastFrame.isValid()) {
-            Leap::Pointable latestPointer1 = latestFrame.pointables()[0];
-            Leap::Pointable latestPointer2 = latestFrame.pointables()[1];
+            Leap::Pointable latestPointer1 = hands[0].pointables()[0];
+            Leap::Pointable latestPointer2 = hands[1].pointables()[0];
             
             Leap::Pointable lastPointer1 = lastFrame.finger(latestPointer1.id());
             Leap::Pointable lastPointer2 = lastFrame.finger(latestPointer2.id());
@@ -151,21 +153,15 @@ void Listener::onFrame(const Leap::Controller &controller) {
                     
                                         
                     // use primary hand as scale, secondary hand as center anchor point
-                    double x, y, dx, dy;
+                    double dx, dy;
                     if (latestPointer1.tipPosition().x > latestPointer2.tipPosition().x) {
                         // latestPointer1 == right hand
 
                         dx = latestPointer1.tipPosition().x - lastPointer1.tipPosition().x;
                         dx += lastPointer2.tipPosition().x - latestPointer2.tipPosition().x;
-                        
-//                        dy = latestPointer1.tipPosition().y - lastPointer1.tipPosition().y;
-//                        dy += lastPointer2.tipPosition().y - latestPointer2.tipPosition().y;
                     } else {
                         dx = latestPointer2.tipPosition().x - lastPointer2.tipPosition().x;
                         dx += lastPointer1.tipPosition().x - latestPointer1.tipPosition().x;
-                        
-//                        dy = latestPointer1.tipPosition().y - lastPointer1.tipPosition().y;
-//                        dy += lastPointer2.tipPosition().y - latestPointer2.tipPosition().y;
                     }
                     
                     // calculate screen aspect ratio
