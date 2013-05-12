@@ -7,11 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C304333D16F5816000896548 /* MakeProcessTrustedAgent.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = C304333516F5814E00896548 /* MakeProcessTrustedAgent.app */; };
-		C33C372A16EDB89300F80078 /* libLeap.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = C3908A0C16EDB15D0009D55F /* libLeap.dylib */; };
 		C33C373D16EDC20300F80078 /* FlingerTestListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33C373B16EDC20300F80078 /* FlingerTestListener.cpp */; };
 		C33C376A16EDD87C00F80078 /* FlingerListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3908A0316EDAF590009D55F /* FlingerListener.cpp */; };
-		C33C376C16EDD87C00F80078 /* libLeap.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C3908A0C16EDB15D0009D55F /* libLeap.dylib */; };
 		C33C376E16EDD87C00F80078 /* FlingerListener.h in Headers */ = {isa = PBXBuildFile; fileRef = C3908A0416EDAF590009D55F /* FlingerListener.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C33C37DE16EEEB4000F80078 /* FlingerMac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33C37DC16EEEB4000F80078 /* FlingerMac.cpp */; };
 		C33C37DF16EEEB4000F80078 /* FlingerMac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C33C37DC16EEEB4000F80078 /* FlingerMac.cpp */; };
@@ -30,18 +27,9 @@
 		C354305616F57EC40077A8D0 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C33C37EE16EEF59300F80078 /* ApplicationServices.framework */; };
 		C39089F716EDAEED0009D55F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C39089F616EDAEED0009D55F /* main.cpp */; };
 		C3908A0516EDAF590009D55F /* FlingerListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C3908A0316EDAF590009D55F /* FlingerListener.cpp */; };
-		C3908A0D16EDB15D0009D55F /* libLeap.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C3908A0C16EDB15D0009D55F /* libLeap.dylib */; };
+		C3C6404517374B6E00D741BC /* libLeap.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C3C6404417374B6E00D741BC /* libLeap.dylib */; };
+		C3C6404617374B7700D741BC /* libLeap.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = C3C6404417374B6E00D741BC /* libLeap.dylib */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		C354305816F57EE70077A8D0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = C39089E916EDAEED0009D55F /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = C33C381516F574A700F80078;
-			remoteInfo = MakeProcessTrustedAgent;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		C33C372816EDB88A00F80078 /* CopyFiles */ = {
@@ -50,26 +38,16 @@
 			dstPath = "";
 			dstSubfolderSpec = 6;
 			files = (
-				C33C372A16EDB89300F80078 /* libLeap.dylib in CopyFiles */,
+				C3C6404617374B7700D741BC /* libLeap.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C39089F016EDAEED0009D55F /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 8;
-			dstPath = "";
-			dstSubfolderSpec = 6;
-			files = (
-				C304333D16F5816000896548 /* MakeProcessTrustedAgent.app in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		C304333316F5814E00896548 /* Flinger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Flinger; sourceTree = BUILT_PRODUCTS_DIR; };
 		C304333516F5814E00896548 /* MakeProcessTrustedAgent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MakeProcessTrustedAgent.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		C304333716F5814E00896548 /* libflinger.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libflinger.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		C304333716F5814E00896548 /* libflinger.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; name = libflinger.dylib; path = /Users/snooz/dev/leap/flinger/build/Release/libflinger.dylib; sourceTree = "<absolute>"; };
 		C33C373B16EDC20300F80078 /* FlingerTestListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FlingerTestListener.cpp; sourceTree = "<group>"; };
 		C33C373C16EDC20300F80078 /* FlingerTestListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlingerTestListener.h; sourceTree = "<group>"; };
 		C33C379216EDDB7B00F80078 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -92,7 +70,7 @@
 		C39089F616EDAEED0009D55F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		C3908A0316EDAF590009D55F /* FlingerListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FlingerListener.cpp; sourceTree = "<group>"; };
 		C3908A0416EDAF590009D55F /* FlingerListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlingerListener.h; sourceTree = "<group>"; };
-		C3908A0C16EDB15D0009D55F /* libLeap.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libLeap.dylib; path = "/Users/snooz/dev/leap/flinger/../Leap_SDK/lib/libc++/libLeap.dylib"; sourceTree = "<absolute>"; };
+		C3C6404417374B6E00D741BC /* libLeap.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libLeap.dylib; path = "../LeapSDK/lib/libc++/libLeap.dylib"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,7 +78,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C33C376C16EDD87C00F80078 /* libLeap.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,7 +98,7 @@
 				C33C37EF16EEF59300F80078 /* ApplicationServices.framework in Frameworks */,
 				C33C37ED16EEF4BF00F80078 /* CoreFoundation.framework in Frameworks */,
 				C33C37EB16EEF4BA00F80078 /* CoreGraphics.framework in Frameworks */,
-				C3908A0D16EDB15D0009D55F /* libLeap.dylib in Frameworks */,
+				C3C6404517374B6E00D741BC /* libLeap.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -141,6 +118,7 @@
 		C33C379116EDDB7B00F80078 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C3C6404417374B6E00D741BC /* libLeap.dylib */,
 				C33C379216EDDB7B00F80078 /* Cocoa.framework */,
 				C33C379416EDDB7B00F80078 /* Other Frameworks */,
 			);
@@ -195,13 +173,11 @@
 				C33C37EE16EEF59300F80078 /* ApplicationServices.framework */,
 				C33C37EC16EEF4BF00F80078 /* CoreFoundation.framework */,
 				C33C37EA16EEF4B900F80078 /* CoreGraphics.framework */,
-				C3908A0C16EDB15D0009D55F /* libLeap.dylib */,
 				C39089F516EDAEED0009D55F /* flinger */,
 				C33C381916F574A700F80078 /* MakeProcessTrustedAgent */,
 				C33C379116EDDB7B00F80078 /* Frameworks */,
 				C304333316F5814E00896548 /* Flinger */,
 				C304333516F5814E00896548 /* MakeProcessTrustedAgent.app */,
-				C304333716F5814E00896548 /* libflinger.dylib */,
 			);
 			sourceTree = "<group>";
 		};
@@ -272,13 +248,11 @@
 			buildPhases = (
 				C39089EE16EDAEED0009D55F /* Sources */,
 				C39089EF16EDAEED0009D55F /* Frameworks */,
-				C39089F016EDAEED0009D55F /* CopyFiles */,
 				C33C372816EDB88A00F80078 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				C354305916F57EE70077A8D0 /* PBXTargetDependency */,
 			);
 			name = Flinger;
 			productName = flinger;
@@ -356,14 +330,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		C354305916F57EE70077A8D0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = C33C381516F574A700F80078 /* MakeProcessTrustedAgent */;
-			targetProxy = C354305816F57EE70077A8D0 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		C33C381C16F574A700F80078 /* InfoPlist.strings */ = {

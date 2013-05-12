@@ -15,7 +15,7 @@ namespace flinger {
 MacDriver::MacDriver() {
     if (! AXAPIEnabled()) {
         // try elevating privs to request AX access
-        // this is broken because we can't launch with AX setgid privs and load the libLeap shared lib...
+        // this is broken because we can't launch with AX setgid privs and load the libLeap shared lib
         // http://lists.apple.com/archives/accessibility-dev/2009/Oct/msg00014.html
         //if (! enableAXTrust()) return;
         needAXAccess();

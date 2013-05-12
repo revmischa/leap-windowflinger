@@ -20,7 +20,16 @@
 
 namespace flinger {
     
-static const unsigned int handGestureFrameInterval = 2;
+enum DockPosition {
+    FLINGER_DOCK_NONE = 0,
+    FLINGER_DOCK_RIGHT = 1,
+    FLINGER_DOCK_LEFT,
+    FLINGER_DOCK_TOP,
+    FLINGER_DOCK_BOTTOM
+};
+    
+static const float handGestureMinScaleProbability = 0.85;
+static const unsigned int handGestureFrameInterval = 1;
 
 class Listener : public Leap::Listener {
 public:

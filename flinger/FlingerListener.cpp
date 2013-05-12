@@ -39,6 +39,15 @@ void Listener::onInit(const Leap::Controller &controller) {
     //    controller.enableGesture(Leap::Gesture::TYPE_CIRCLE);
     controller.enableGesture(Leap::Gesture::TYPE_SCREEN_TAP);
     controller.enableGesture(Leap::Gesture::TYPE_SWIPE);
+    
+    // make ScreenTap a little more tolerent (at the expense of latency?)
+    Leap::Config config = controller.config();
+    bool setConfigSuccess = config.setFloat("Gesture.ScreenTap.HistorySeconds", 0.3);
+    config.save();
+    
+    // ask to receive frames even if this application is not in the foreground
+    Leap::Controller::PolicyFlag policyFlags = Leap::Controller::POLICY_BACKGROUND_FRAMES;
+    controller.setPolicyFlags(policyFlags);
 }
     
 // where is this pointable pointing (on the screen, not in space)?
@@ -79,12 +88,13 @@ void Listener::onFrame(const Leap::Controller &controller) {
     Leap::GestureList gestures = latestFrame.gestures();
 
     // process gestures
+    DockPosition dockPos = FLINGER_DOCK_NONE;
     for (Leap::GestureList::const_iterator it = gestures.begin(); it != gestures.end(); ++it) {
         Leap::Gesture gesture = *it;
         
         switch (gesture.type()) {
             case Leap::Gesture::TYPE_SCREEN_TAP: {
-                Leap::ScreenTapGesture tap = Leap::ScreenTapGesture(gesture);
+                auto tap = Leap::ScreenTapGesture(gesture);
                 
                 // select new current window, or deselect current window
                 if (currentWin) {
@@ -108,19 +118,105 @@ void Listener::onFrame(const Leap::Controller &controller) {
                 currentWin = win;
                 currentWinOrigPosition = driver->getWindowPosition(win);
             } break;
+                
+            case Leap::Gesture::TYPE_SWIPE: {
+                auto swipe = Leap::SwipeGesture(gesture);
+                if (swipe.state() == Leap::Gesture::STATE_STOP) {
+                    // swipe finished
+                    auto direction = swipe.direction();
+//                    cout << direction << endl;
+                    
+                    // what major direction did they swipe in? left, top, right, bottom?
+                    if (direction.x > 0 && direction.x > direction.y)
+                        dockPos = FLINGER_DOCK_RIGHT;
+                    else if (direction.x < 0 && direction.x < direction.y)
+                        dockPos = FLINGER_DOCK_LEFT;
+                    else if (direction.y < 0 && direction.y < direction.x)
+                        dockPos = FLINGER_DOCK_BOTTOM;
+                    else if (direction.y > direction.x)
+                        dockPos = FLINGER_DOCK_TOP;
+                }
+            } break;
         
             default:
                 break;
         }
     }
     
+    // trying to dock a window to a section of the screen with a swipe gesture?
+    if (currentWin && dockPos != FLINGER_DOCK_NONE && ! screens.isEmpty()) {
+        auto dockScreen = screens[0];
+        auto width = dockScreen.widthPixels();
+        auto height = dockScreen.heightPixels();
+        
+        // figure out window coords
+        float destX, destY, destWidth = 0, destHeight = 0;
+        switch (dockPos) {
+            case FLINGER_DOCK_LEFT:
+                destX = 0;
+                destY = 0;
+                destWidth = width / 2;
+                destHeight = height;
+                break;
+            case FLINGER_DOCK_RIGHT:
+                destX = width / 2;
+                destY = 0;
+                destWidth = width / 2;
+                destHeight = height;
+                break;
+            case FLINGER_DOCK_TOP:
+                destX = 0;
+                destY = 0;
+                destWidth = width;
+                destHeight = height / 2;
+                break;
+            case FLINGER_DOCK_BOTTOM:
+                destX = 0;
+                destY = height / 2;
+                destWidth = width;
+                destHeight = height / 2;
+                break;
+            default:
+                cerr << "Got dockPos set to unknown enum value\n";
+                break;
+        }
+        
+        if (destWidth && destHeight) {
+            // position window in docked area
+            // would be pretty neat to animate this stuff
+            Leap::Vector pos = Leap::Vector(destX, destY, 0);
+            driver->setWindowPosition(currentWin, pos);
+            Leap::Vector size = Leap::Vector(destWidth, destHeight, 0);
+            driver->setWindowSize(currentWin, size);
+            
+            // stop dragging/focusing window
+            setCurrentWin(NULL);
+            return;
+        }
+    }
+    
     // one-finger pointing
-    if (currentWin && latestFrame.pointables().count() == 1) {
+    if (currentWin && latestFrame.hands().count() == 1 && latestFrame.pointables().count() == 1) {
         Leap::Vector hitPoint = pointableScreenPos(latestFrame.pointables()[0], screens);
         driver->setWindowCenter(currentWin, hitPoint);
         return;
     }
     
+    // scale currently selected window with Motion scale detection
+    if (currentWin && refFrame.isValid()) {
+        float scaleProbability = latestFrame.scaleProbability(refFrame);
+        std::cout << "Probability: " << scaleProbability << endl;
+        if (scaleProbability > handGestureMinScaleProbability) {
+            float scaleFactor = latestFrame.scaleFactor(refFrame);
+            if (scaleFactor < 1.0)
+                scaleFactor = -scaleFactor;
+            scaleFactor *= 50;
+            cout << scaleFactor << endl;
+            driver->scaleWindow(currentWin, scaleFactor, scaleFactor);
+        }
+    }
+    
+    return;
     // scale currently selected window with two-hand finger pointing
     Leap::HandList hands = latestFrame.hands();
     if (currentWin && hands.count() == 2 && hands[0].pointables().count() >= 1 && hands[1].pointables().count() >= 1) {
@@ -165,9 +261,7 @@ void Listener::onFrame(const Leap::Controller &controller) {
                     }
                     
                     // calculate screen aspect ratio
-                    double aspect = screens[0].widthPixels() / screens[0].heightPixels();
                     dy = dx;
-//                    dy *= aspect;
                     
                     // distance
                     double distance = latestPointer1.tipPosition().distanceTo(latestPointer2.tipPosition());
