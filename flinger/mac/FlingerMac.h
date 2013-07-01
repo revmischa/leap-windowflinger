@@ -6,8 +6,8 @@
 //
 //
 
-#ifndef __flinger__FlingerMac__
-#define __flinger__FlingerMac__
+#ifndef __flinger__MacDriver__
+#define __flinger__MacDriver__
 
 #include <iostream>
 #include <map>
@@ -36,14 +36,23 @@ public:
     virtual void scaleWindow(const flingerWinRef win, double dx, double dy);
     
 protected:
+    // passed to CGWindowListCopyWindowInfo
+    // to control which windows we are testing
     CGWindowListOption listOptions;
+    
+    // last retrieved set of window information
     CFArrayRef windowList;
     
+    // update windowList with current window layer attrs
     void updateWindowInfo();
+    
+    // search for a window containing (x,y) at depth winIdx
+    // belonging to process pid
     const flingerWinRef findWindowForPID(int pid, int winIdx, double x, double y);
+    
     CGSize _getWindowSize(const flingerWinRef win);
     CGPoint _getWindowPosition(const flingerWinRef win);
-    bool enableAXTrust();
+//    bool enableAXTrust();
     void needAXAccess();
 };
     

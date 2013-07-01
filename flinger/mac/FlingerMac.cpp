@@ -19,6 +19,7 @@ MacDriver::MacDriver() {
         // http://lists.apple.com/archives/accessibility-dev/2009/Oct/msg00014.html
         //if (! enableAXTrust()) return;
         needAXAccess();
+        cerr << "Please enable the accessibility API" << endl;
         exit(1);
     } else {
         cout << "AXAPI is enabled.\n";
@@ -28,17 +29,28 @@ MacDriver::MacDriver() {
     
     listOptions = kCGWindowListExcludeDesktopElements;
     listOptions |= kCGWindowListOptionOnScreenOnly;
-}
+}	
     
 void MacDriver::updateWindowInfo() {
+    if (windowList)
+        CFRelease(windowList);
     windowList = CGWindowListCopyWindowInfo(listOptions, kCGNullWindowID);
 }
 
 const flingerWinRef MacDriver::getWindowAt(double x, double y) {
+    // get latest window list
     updateWindowInfo();
+    
     flingerWinRef ret = NULL;
+    
+    // map of process ID to last checked application window index
     map<int,int> checkedProcWindows;
     
+    // windowList contains a list of information about each window on-screen
+    // unfortunately it does not contain the AXUIElementRef which we need to
+    // get and set the window bounds and position.
+    // each iteration we must determine which process has the next window in
+    // the list, and check the front-most unchecked window for that process.
     for (int i = 0; i < CFArrayGetCount(windowList); i++) {
         // check each application's windows in turn. windows appear to be ordered by "depth" already
         
@@ -58,44 +70,20 @@ const flingerWinRef MacDriver::getWindowAt(double x, double y) {
             procWinIdx = 0;
         checkedProcWindows[pid] = procWinIdx;
         
-        
-        // layer
+        // get layer
         int layer;
         CFNumberRef layerRef = (CFNumberRef)CFDictionaryGetValue(info, kCGWindowLayer);
         CFNumberGetValue(layerRef, kCFNumberIntType, &layer);
         
-        // would be nice to be able to select system windows, but they always appear to be on top
-        if (layer != 0) continue; // maybe? can't find docs on layer, but 0 seems to be app
+        // would be nice to be able to select windows from system layers,
+        // but they always appear to be on top
+        if (layer != 0) continue; // normal application layer
         
-        /*
-        // window num
-        CFNumberRef winNumRef = (CFNumberRef)CFDictionaryGetValue(info, kCGWindowNumber);
-        
-        // bounds
-        CFDictionaryRef boundsDict = (CFDictionaryRef)CFDictionaryGetValue(info, kCGWindowBounds);
-        CGRect bounds;
-        CGRectMakeWithDictionaryRepresentation(boundsDict, &bounds);
-
-        cout << "Window pid: " << pid << ", layer: " << layer;
-        CFStringRef appNameRef = (CFStringRef)CFDictionaryGetValue(info, kCGWindowOwnerName);
-        const char *ownerName = NULL;
-        if (appNameRef) {
-            
-            ownerName = CFStringGetCStringPtr(appNameRef, kCFStringEncodingUTF8);
-            if (ownerName) {
-                cout << ", owner: " << ownerName;
-            } else {
-                char ownerNameTmp[300];
-                if (CFStringGetCString(appNameRef, ownerNameTmp, sizeof(ownerNameTmp), kCFStringEncodingUTF8))
-                    cout << ", owner: " << ownerNameTmp;
-            }
-        }
-        cout << endl;
-         */
-        
-        // search for window with a rect that includes the test point
+        // search for window owned by process pid with a frame that includes the point (x,y)
         cout << "Checking point in " << x << "," << y << endl;
         ret = findWindowForPID(pid, procWinIdx, x, y);
+        
+        // found our window?
         if (ret) break;
     }
 
@@ -128,10 +116,13 @@ const flingerWinRef MacDriver::findWindowForPID(int pid, int winIdx, double x, d
         return ret;
     }
     
+    // get a reference to the window at index winIdx
     AXUIElementRef winRef = (AXUIElementRef)CFArrayGetValueAtIndex(appWindowsRef, winIdx);
     CFRetain(winRef);
     CFRelease(appWindowsRef);
     
+    // copy window title from the attribute reference to a utf8
+    // buffer. not critically important, but useful for debugging.
     CFStringRef titleRef;
     char titleTmp[300];
     bool hasTitle = false;
@@ -172,6 +163,55 @@ const flingerWinRef MacDriver::findWindowForPID(int pid, int winIdx, double x, d
     CFRelease(winRef);
     return ret;
 }
+
+/*
+// simplified version
+const flingerWinRef MacDriver::findWindowForPID(int pid, int winIdx, double x, double y) {
+    flingerWinRef ret = NULL;
+    
+    // get all windows for this application
+    AXUIElementRef appRef = AXUIElementCreateApplication(pid);
+    
+    // get app windows for appRef
+    CFArrayRef appWindowsRef;
+    AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute, (CFTypeRef *)&appWindowsRef);
+    
+    // check next window in the stack, which we should find at winIdx
+    long winCount = CFArrayGetCount(appWindowsRef);
+    if (winIdx >= winCount) {
+        CFRelease(appWindowsRef);
+        return ret;
+    }
+    
+    // get a reference to the window at index winIdx
+    AXUIElementRef winRef = (AXUIElementRef)CFArrayGetValueAtIndex(appWindowsRef, winIdx);
+    CFRetain(winRef);
+    CFRelease(appWindowsRef);
+    
+    // now that we've got our proper window reference for AXUI, we can ask about
+    // window size and position
+    CFTypeRef encodedSize, encodedPosition;
+    CGSize size; CGPoint position;
+    // get size/position as opaque references
+    AXUIElementCopyAttributeValue(winRef, kAXSizeAttribute, (CFTypeRef *)&encodedSize);
+    AXUIElementCopyAttributeValue(winRef, kAXPositionAttribute, (CFTypeRef *)&encodedPosition);
+    // convert references into CGSize and CGPoint types
+    AXValueGetValue((AXValueRef)encodedSize, kAXValueCGSizeType, (void *)&size);
+    AXValueGetValue((AXValueRef)encodedPosition, kAXValueCGPointType, &position);
+    CFRelease(encodedSize);
+    CFRelease(encodedPosition);
+    
+    // check to see if this window contains our test point
+    CGPoint testPoint = CGPointMake(x, y);
+    CGRect winRect = CGRectMake(position.x, position.y, size.width, size.height);
+    if (CGRectContainsPoint(winRect, testPoint)) {
+        ret = (void *)CFRetain(winRef);
+    }
+    
+    CFRelease(winRef);
+    return ret;
+}
+*/
 
 void MacDriver::releaseWinRef(flingerWinRef win) {
     CFRelease(win);
@@ -292,6 +332,7 @@ void MacDriver::needAXAccess() {
     //	[NSApp terminate:nil];
 }
 
+/*
 bool MacDriver::enableAXTrust() {
     //authentication based on file:///Developer/Documentation/DocSets/com.apple.ADC_Reference_Library.CoreReference.docset/Contents/Resources/Documents/documentation/Security/Conceptual/authorization_concepts/03authtasks/chapter_3_section_4.html
     // auth helper code from http://caffeinatedcocoa.com/blog/?p=12
@@ -360,5 +401,6 @@ bool MacDriver::enableAXTrust() {
     //due to a bug with AXMakeProcessTrusted(), we need to be relaunched before we will actually have access to UI Scripting
     exit(0);
 }
-
+*/
+    
 }

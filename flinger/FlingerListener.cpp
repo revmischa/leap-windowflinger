@@ -35,11 +35,12 @@ void Listener::setCurrentWin(flingerWinRef win) {
 
     
 void Listener::onInit(const Leap::Controller &controller) {
-    //    controller.enableGesture(Leap::Gesture::TYPE_KEY_TAP);
-    //    controller.enableGesture(Leap::Gesture::TYPE_CIRCLE);
     controller.enableGesture(Leap::Gesture::TYPE_SCREEN_TAP);
     controller.enableGesture(Leap::Gesture::TYPE_SWIPE);
-    
+
+    //    controller.enableGesture(Leap::Gesture::TYPE_KEY_TAP);
+    //    controller.enableGesture(Leap::Gesture::TYPE_CIRCLE);
+
     // make ScreenTap a little more tolerent (at the expense of latency?)
     Leap::Config config = controller.config();
     bool setConfigSuccess = config.setFloat("Gesture.ScreenTap.HistorySeconds", 0.3);
@@ -56,19 +57,18 @@ static Leap::Vector pointableScreenPos(const Leap::Pointable &pointable, const L
     if (screens.empty())
         return Leap::Vector();
     
-    // get point location
     // get screen associated with gesture
     Leap::Screen screen = screens.closestScreenHit(pointable);
-    
-    Leap::Vector cursorLoc = screen.intersect(pointable, true);
-    if (! cursorLoc.isValid()) {
-        cout << "failed to find intersection\n";
+    if (! screen.isValid())
         return Leap::Vector();
-    }
+    
+    // get point location
+    Leap::Vector cursorLoc = screen.intersect(pointable, true);
+    if (! cursorLoc.isValid())
+        return Leap::Vector();
     
     double screenX = cursorLoc.x * screen.widthPixels();
     double screenY = (1.0 - cursorLoc.y) * screen.heightPixels();
-    //                cout << "Screen tapped at " << screenX << "," << screenY << endl;
 
     return Leap::Vector(screenX, screenY, 0);
 }
@@ -121,20 +121,37 @@ void Listener::onFrame(const Leap::Controller &controller) {
                 
             case Leap::Gesture::TYPE_SWIPE: {
                 auto swipe = Leap::SwipeGesture(gesture);
-                if (swipe.state() == Leap::Gesture::STATE_STOP) {
-                    // swipe finished
-                    auto direction = swipe.direction();
-//                    cout << direction << endl;
-                    
-                    // what major direction did they swipe in? left, top, right, bottom?
-                    if (direction.x > 0 && direction.x > direction.y)
-                        dockPos = FLINGER_DOCK_RIGHT;
-                    else if (direction.x < 0 && direction.x < direction.y)
-                        dockPos = FLINGER_DOCK_LEFT;
-                    else if (direction.y < 0 && direction.y < direction.x)
-                        dockPos = FLINGER_DOCK_BOTTOM;
-                    else if (direction.y > direction.x)
-                        dockPos = FLINGER_DOCK_TOP;
+                auto direction = swipe.direction();
+
+                switch (swipe.state()) {
+                    case Leap::Gesture::STATE_UPDATE:
+                        // scoot window according to swipe direction to give a little visual feedback
+                        if (currentWin) {
+                            auto magnified = direction * 100;
+                            auto curPos = driver->getWindowPosition(currentWin);
+                            if (curPos.isValid()) {
+                                curPos.x += magnified.x;
+                                curPos.y += magnified.y;
+                                driver->setWindowPosition(currentWin, curPos);
+                            }
+                        }
+//                                cout << (direction * 100).toString() << endl;
+                        break;
+                        
+                    case Leap::Gesture::STATE_STOP:
+                        // swipe finished
+    //                    cout << direction << endl;
+                        
+                        // what major direction did they swipe in? left, top, right, bottom?
+                        if (direction.x > 0 && direction.x > direction.y)
+                            dockPos = FLINGER_DOCK_RIGHT;
+                        else if (direction.x < 0 && direction.x < direction.y)
+                            dockPos = FLINGER_DOCK_LEFT;
+                        else if (direction.y < 0 && direction.y < direction.x)
+                            dockPos = FLINGER_DOCK_BOTTOM;
+                        else if (direction.y > direction.x)
+                            dockPos = FLINGER_DOCK_TOP;
+                        break;
                 }
             } break;
         
@@ -196,9 +213,10 @@ void Listener::onFrame(const Leap::Controller &controller) {
     }
     
     // one-finger pointing
-    if (currentWin && latestFrame.hands().count() == 1 && latestFrame.pointables().count() == 1) {
+    if (currentWin && latestFrame.pointables().count() == 1) {
         Leap::Vector hitPoint = pointableScreenPos(latestFrame.pointables()[0], screens);
-        driver->setWindowCenter(currentWin, hitPoint);
+        if (hitPoint.isValid())
+            driver->setWindowCenter(currentWin, hitPoint);
         return;
     }
     
